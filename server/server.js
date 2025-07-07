@@ -1,24 +1,21 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const authRoutes = require('./routes/authRoute.js');
-
-dotenv.config();
-console.log('__dirname:', __dirname);
-console.log('MONGO_URI from env:', process.env.MONGO_URI);
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
-app.use(express.json());
-app.use(cors());
 
-// Routes
-app.use('/api/auth', authRoutes);
+// Ye line __dirname ko set karne ke liye hai
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Connect MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.log('MongoDB error:', err));
+// React build ko static folder ki tarah serve karo
+app.use(express.static(path.join(__dirname, 'client/build')));
 
-const PORT = 5000;
+// Agar koi route match nahi hota, to React ka index.html return karo
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build/index.html'));
+});
+
+// Server start karo
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
